@@ -66,7 +66,7 @@ const STANDARDS_MAP: Record<DatasetType, string[]> = {
  * Validate a dataset file
  * Uses mock validation for demo, would connect to Bio.xyz API in production
  */
-export async function validateDataset(file: File, category?: string): Promise<ValidationResult> {
+export async function validateDataset(file: File, _category?: string): Promise<ValidationResult> {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 1000));
 

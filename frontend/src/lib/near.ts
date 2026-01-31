@@ -4,8 +4,9 @@
  * Uses mock wallet for development, real wallet in production
  */
 
-const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'veritasai.testnet';
-const NETWORK_ID = 'testnet';
+// Mock configuration
+// const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'veritasai.testnet';
+// const NETWORK_ID = 'testnet';
 
 export interface Dataset {
   id: number;

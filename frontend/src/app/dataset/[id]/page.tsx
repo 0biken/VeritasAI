@@ -97,29 +97,29 @@ export default function DatasetPage() {
   const [zkVerified, setZkVerified] = useState<boolean | null>(null);
 
   useEffect(() => {
+    async function loadDataset() {
+      setLoading(true);
+      // Simulate loading from contract
+      await new Promise((r) => setTimeout(r, 500));
+      setDataset(mockDatasets[datasetId] || null);
+      setLoading(false);
+    }
+
+    async function checkAuth() {
+      try {
+        const signedIn = await isSignedIn();
+        if (signedIn) {
+          const accountId = await getAccountId();
+          setAccount(accountId);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      }
+    }
+
     loadDataset();
     checkAuth();
   }, [datasetId]);
-
-  async function loadDataset() {
-    setLoading(true);
-    // Simulate loading from contract
-    await new Promise((r) => setTimeout(r, 500));
-    setDataset(mockDatasets[datasetId] || null);
-    setLoading(false);
-  }
-
-  async function checkAuth() {
-    try {
-      const signedIn = await isSignedIn();
-      if (signedIn) {
-        const accountId = await getAccountId();
-        setAccount(accountId);
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    }
-  }
 
   async function handlePurchase() {
     if (!account) {
@@ -163,7 +163,7 @@ export default function DatasetPage() {
         <div className="mx-auto max-w-4xl px-4 text-center">
           <h1 className="mb-4 text-2xl font-bold text-white">Dataset Not Found</h1>
           <p className="mb-8 text-gray-400">
-            The dataset you're looking for doesn't exist or has been removed.
+            The dataset you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Link
             href="/marketplace"

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, ChevronDown, Loader2 } from 'lucide-react';
+import { Search, ChevronDown, Loader2 } from 'lucide-react';
 import { DatasetCard, DatasetCardSkeleton } from '@/components/DatasetCard';
 import { Dataset } from '@/lib/near';
 
@@ -123,7 +123,6 @@ export default function MarketplacePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [sortBy, setSortBy] = useState('newest');
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     // Simulate loading from contract

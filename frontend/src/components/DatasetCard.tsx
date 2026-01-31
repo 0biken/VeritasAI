@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { Download, Shield, CheckCircle, FileText } from 'lucide-react';
 import { Dataset, formatNear } from '@/lib/near';
-import { getValidationStatus, getValidationBadgeColor } from '@/lib/biovalidation';
 
 interface DatasetCardProps {
   dataset: Dataset;
@@ -11,7 +10,6 @@ interface DatasetCardProps {
 }
 
 export function DatasetCard({ dataset, compact = false }: DatasetCardProps) {
-  const validationScore = dataset.bio_validated ? 85 : 40;
   const hasZKProof = dataset.zk_proof_hash && dataset.zk_proof_hash !== '0x000';
 
   const categoryColors: Record<string, string> = {

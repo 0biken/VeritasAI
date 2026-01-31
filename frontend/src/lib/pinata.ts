@@ -130,7 +130,7 @@ export class PinataService {
   /**
    * Upload JSON metadata
    */
-  async uploadJSON(data: Record<string, any>, name: string): Promise<UploadResult> {
+  async uploadJSON(data: Record<string, unknown>, name: string): Promise<UploadResult> {
     const response = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
       method: 'POST',
       headers: {
@@ -189,7 +189,7 @@ export class PinataService {
   /**
    * Get pin status
    */
-  async getPinStatus(cid: string): Promise<any> {
+  async getPinStatus(cid: string): Promise<unknown> {
     const response = await fetch(`https://api.pinata.cloud/data/pinList?hashContains=${cid}`, {
       headers: {
         Authorization: `Bearer ${this.jwt}`,

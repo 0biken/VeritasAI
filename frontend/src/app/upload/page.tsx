@@ -100,7 +100,7 @@ export default function UploadPage() {
             </div>
             <h3 className="mb-2 font-semibold text-white">Filecoin Storage</h3>
             <p className="text-sm text-gray-400">
-              Your dataset is stored on Filecoin's decentralized network with a unique CID for
+              Your dataset is stored on Filecoin&apos;s decentralized network with a unique CID for
               permanent access.
             </p>
           </div>
