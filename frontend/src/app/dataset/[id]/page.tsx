@@ -16,8 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { Dataset, formatNear, isSignedIn, getAccountId, signIn } from '@/lib/near';
-import { getValidationStatus, getValidationBadgeColor } from '@/lib/biovalidation';
-import { verifyZKProof, formatFileSize } from '@/lib/zkproofs';
+
 import { getPinataService } from '@/lib/pinata';
 
 // Mock dataset data (in production, fetch from NEAR contract)
@@ -177,7 +176,7 @@ export default function DatasetPage() {
     );
   }
 
-  const validationScore = dataset.bio_validated ? 85 : 40;
+
   const gatewayUrl = getPinataService().getGatewayUrl(dataset.filecoin_cid);
 
   return (
