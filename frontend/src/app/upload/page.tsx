@@ -11,19 +11,19 @@ export default function UploadPage() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const signedIn = await isSignedIn();
+        setAuthenticated(signedIn);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      } finally {
+        setChecking(false);
+      }
+    };
+
     checkAuth();
   }, []);
-
-  async function checkAuth() {
-    try {
-      const signedIn = await isSignedIn();
-      setAuthenticated(signedIn);
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    } finally {
-      setChecking(false);
-    }
-  }
 
   async function handleConnect() {
     try {
