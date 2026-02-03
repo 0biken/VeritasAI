@@ -1,12 +1,7 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/Navbar';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
+import { WalletProvider } from '@/contexts/WalletContext';
 
 export const metadata: Metadata = {
   title: 'VeritasAI - Decentralized AI Training Data Marketplace',
@@ -36,11 +31,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${inter.variable} min-h-screen bg-gray-950 font-sans text-white antialiased`}
-      >
-        <Navbar />
-        <main className="pt-16">{children}</main>
+      <body className="min-h-screen bg-background-primary font-body text-white antialiased">
+        <WalletProvider>
+          <Navbar />
+          <main className="pt-16">{children}</main>
+        </WalletProvider>
       </body>
     </html>
   );

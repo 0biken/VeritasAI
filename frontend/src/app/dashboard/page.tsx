@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   Wallet,
   TrendingUp,
@@ -11,8 +11,11 @@ import {
   ArrowUpRight,
   Eye,
 } from 'lucide-react';
-import { isSignedIn, getAccountId, signIn, formatNear } from '@/lib/near';
+import { useWallet } from '@/contexts/WalletContext';
+import { formatNear } from '@/lib/near';
 import { DatasetCard } from '@/components/DatasetCard';
+import { Button } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 // Mock provider data
 const mockProviderData = {
@@ -53,59 +56,29 @@ const mockProviderData = {
 };
 
 export default function DashboardPage() {
-  const [account, setAccount] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { accountId, isSignedIn, isLoading, signIn } = useWallet();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    try {
-      const signedIn = await isSignedIn();
-      if (signedIn) {
-        const accountId = await getAccountId();
-        setAccount(accountId);
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleConnect() {
-    try {
-      await signIn();
-    } catch (error) {
-      console.error('Sign in failed:', error);
-    }
-  }
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-start border-t-transparent" />
       </div>
     );
   }
 
-  if (!account) {
+  if (!isSignedIn) {
     return (
       <div className="min-h-screen py-12">
         <div className="mx-auto max-w-md px-4 text-center">
-          <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-8">
-            <Wallet className="mx-auto mb-6 h-16 w-16 text-gray-500" />
+          <div className="rounded-lg border border-white/8 bg-surface-elevated p-8 backdrop-blur-lg">
+            <Wallet className="mx-auto mb-6 h-16 w-16 text-white/30" />
             <h1 className="mb-4 text-2xl font-bold text-white">Provider Dashboard</h1>
-            <p className="mb-8 text-gray-400">
+            <p className="mb-8 text-white/60">
               Connect your NEAR wallet to view your datasets, earnings, and analytics.
             </p>
-            <button
-              onClick={handleConnect}
-              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-4 font-semibold text-white hover:from-blue-500 hover:to-purple-500"
-            >
+            <Button onClick={signIn} className="w-full">
               Connect Wallet
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -116,79 +89,107 @@ export default function DashboardPage() {
     <div className="min-h-screen py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        >
           <div>
             <h1 className="text-3xl font-bold text-white">Provider Dashboard</h1>
-            <p className="mt-1 text-gray-400">
-              Welcome back, <span className="text-purple-400">{account}</span>
+            <p className="mt-1 text-white/60">
+              Welcome back, <span className="text-primary-start">{accountId}</span>
             </p>
           </div>
-          <Link
-            href="/upload"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-medium text-white hover:from-blue-500 hover:to-purple-500"
-          >
-            <Database className="h-5 w-5" />
-            Upload New Dataset
+          <Link href="/upload">
+            <Button leftIcon={<Database className="h-5 w-5" />}>Upload New Dataset</Button>
           </Link>
-        </div>
+        </motion.div>
 
         {/* Stats Cards */}
-        <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/20">
-                <DollarSign className="h-6 w-6 text-green-400" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {[
+            {
+              icon: DollarSign,
+              value: formatNear(mockProviderData.totalEarnings),
+              label: 'Total Earnings',
+              color: 'validation',
+              trend: '+12.5%',
+            },
+            {
+              icon: TrendingUp,
+              value: formatNear(mockProviderData.thisMonth),
+              label: 'This Month',
+              color: 'primary-start',
+            },
+            {
+              icon: Download,
+              value: mockProviderData.totalDownloads,
+              label: 'Total Downloads',
+              color: 'primary-end',
+            },
+            {
+              icon: Database,
+              value: mockProviderData.totalDatasets,
+              label: 'Active Datasets',
+              color: 'accent',
+            },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05 }}
+              className="rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <div
+                  className={cn(
+                    'flex h-12 w-12 items-center justify-center rounded-lg',
+                    stat.color === 'validation' && 'bg-validation/20',
+                    stat.color === 'primary-start' && 'bg-primary-start/20',
+                    stat.color === 'primary-end' && 'bg-primary-end/20',
+                    stat.color === 'accent' && 'bg-accent/20'
+                  )}
+                >
+                  <stat.icon
+                    className={cn(
+                      'h-6 w-6',
+                      stat.color === 'validation' && 'text-validation',
+                      stat.color === 'primary-start' && 'text-primary-start',
+                      stat.color === 'primary-end' && 'text-primary-end',
+                      stat.color === 'accent' && 'text-accent'
+                    )}
+                  />
+                </div>
+                {stat.trend && (
+                  <span className="rounded-lg bg-validation/20 px-2 py-1 text-xs font-medium text-validation">
+                    {stat.trend}
+                  </span>
+                )}
               </div>
-              <span className="rounded-full bg-green-500/20 px-2 py-1 text-xs font-medium text-green-400">
-                +12.5%
-              </span>
-            </div>
-            <div className="text-3xl font-bold text-white">
-              {formatNear(mockProviderData.totalEarnings)} Ⓝ
-            </div>
-            <div className="mt-1 text-sm text-gray-400">Total Earnings</div>
-          </div>
-
-          <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20">
-                <TrendingUp className="h-6 w-6 text-blue-400" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-white">
-              {formatNear(mockProviderData.thisMonth)} Ⓝ
-            </div>
-            <div className="mt-1 text-sm text-gray-400">This Month</div>
-          </div>
-
-          <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/20">
-                <Download className="h-6 w-6 text-purple-400" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-white">{mockProviderData.totalDownloads}</div>
-            <div className="mt-1 text-sm text-gray-400">Total Downloads</div>
-          </div>
-
-          <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/20">
-                <Database className="h-6 w-6 text-orange-400" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-white">{mockProviderData.totalDatasets}</div>
-            <div className="mt-1 text-sm text-gray-400">Active Datasets</div>
-          </div>
-        </div>
+              <div className="text-3xl font-bold gradient-text">{stat.value} Ⓝ</div>
+              <div className="mt-1 text-sm text-white/50">{stat.label}</div>
+            </motion.div>
+          ))}
+        </motion.div>
 
         {/* Your Datasets */}
-        <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-8"
+        >
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Your Datasets</h2>
             <Link
               href="/marketplace"
-              className="flex items-center gap-1 text-sm text-purple-400 hover:text-purple-300"
+              className="flex items-center gap-1 text-sm text-primary-start hover:text-primary-start/80 transition-colors"
             >
               View in Marketplace
               <ArrowUpRight className="h-4 w-4" />
@@ -200,13 +201,17 @@ export default function DashboardPage() {
               <DatasetCard key={dataset.id} dataset={dataset} />
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Recent Activity */}
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
           <h2 className="mb-6 text-xl font-semibold text-white">Recent Activity</h2>
-          <div className="overflow-hidden rounded-2xl border border-gray-700 bg-gray-800/50">
-            <div className="divide-y divide-gray-700">
+          <div className="overflow-hidden rounded-lg border border-white/8 bg-surface-elevated backdrop-blur-lg">
+            <div className="divide-y divide-white/8">
               {[
                 {
                   type: 'purchase',
@@ -237,39 +242,46 @@ export default function DashboardPage() {
                   time: '2 days ago',
                 },
               ].map((activity, i) => (
-                <div key={i} className="flex items-center justify-between p-4 hover:bg-gray-800/50">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + i * 0.05 }}
+                  className="flex items-center justify-between p-4 hover:bg-surface-base transition-colors"
+                >
                   <div className="flex items-center gap-4">
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                        activity.type === 'purchase' ? 'bg-green-500/20' : 'bg-blue-500/20'
-                      }`}
+                      className={cn(
+                        'flex h-10 w-10 items-center justify-center rounded-full',
+                        activity.type === 'purchase' ? 'bg-validation/20' : 'bg-primary-start/20'
+                      )}
                     >
                       {activity.type === 'purchase' ? (
-                        <DollarSign className="h-5 w-5 text-green-400" />
+                        <DollarSign className="h-5 w-5 text-validation" />
                       ) : (
-                        <Eye className="h-5 w-5 text-blue-400" />
+                        <Eye className="h-5 w-5 text-primary-start" />
                       )}
                     </div>
                     <div>
                       <div className="font-medium text-white">
                         {activity.type === 'purchase' ? 'New Purchase' : 'Dataset Viewed'}
                       </div>
-                      <div className="text-sm text-gray-400">
+                      <div className="text-sm text-white/50">
                         {activity.buyer} • {activity.dataset}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     {activity.amount && (
-                      <div className="font-medium text-green-400">+{activity.amount} Ⓝ</div>
+                      <div className="font-medium text-validation">+{activity.amount} Ⓝ</div>
                     )}
-                    <div className="text-sm text-gray-500">{activity.time}</div>
+                    <div className="text-sm text-white/40">{activity.time}</div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

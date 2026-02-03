@@ -3,21 +3,23 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   Download,
-  Shield,
   CheckCircle,
   Copy,
   ExternalLink,
   Calendar,
   User,
   FileText,
-  Loader2,
+  Lock,
 } from 'lucide-react';
-import { Dataset, formatNear, isSignedIn, getAccountId, signIn } from '@/lib/near';
-
+import { Dataset, formatNear } from '@/lib/near';
 import { getPinataService } from '@/lib/pinata';
+import { useWallet } from '@/contexts/WalletContext';
+import { Button, Badge } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 // Mock dataset data (in production, fetch from NEAR contract)
 const mockDatasets: Record<number, Dataset> = {
@@ -86,12 +88,12 @@ Atelectasis, Cardiomegaly, Consolidation, Edema, Effusion, Emphysema, Fibrosis, 
 export default function DatasetPage() {
   const params = useParams();
   const datasetId = parseInt(params.id as string, 10);
+  const { accountId, isSignedIn, signIn } = useWallet();
 
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [hasPurchased, setHasPurchased] = useState(false);
-  const [account, setAccount] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [zkVerified, setZkVerified] = useState<boolean | null>(null);
 
@@ -104,25 +106,12 @@ export default function DatasetPage() {
       setLoading(false);
     }
 
-    async function checkAuth() {
-      try {
-        const signedIn = await isSignedIn();
-        if (signedIn) {
-          const accountId = await getAccountId();
-          setAccount(accountId);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-      }
-    }
-
     loadDataset();
-    checkAuth();
   }, [datasetId]);
 
   async function handlePurchase() {
-    if (!account) {
-      await signIn();
+    if (!isSignedIn) {
+      signIn();
       return;
     }
 
@@ -151,7 +140,7 @@ export default function DatasetPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-start border-t-transparent" />
       </div>
     );
   }
@@ -161,21 +150,16 @@ export default function DatasetPage() {
       <div className="min-h-screen py-12">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <h1 className="mb-4 text-2xl font-bold text-white">Dataset Not Found</h1>
-          <p className="mb-8 text-gray-400">
+          <p className="mb-8 text-white/60">
             The dataset you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
-          <Link
-            href="/marketplace"
-            className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-3 text-white hover:bg-purple-500"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Marketplace
+          <Link href="/marketplace">
+            <Button leftIcon={<ArrowLeft className="h-4 w-4" />}>Back to Marketplace</Button>
           </Link>
         </div>
       </div>
     );
   }
-
 
   const gatewayUrl = getPinataService().getGatewayUrl(dataset.filecoin_cid);
 
@@ -185,7 +169,7 @@ export default function DatasetPage() {
         {/* Back Link */}
         <Link
           href="/marketplace"
-          className="mb-8 inline-flex items-center gap-2 text-gray-400 hover:text-white"
+          className="mb-8 inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Marketplace
@@ -193,35 +177,37 @@ export default function DatasetPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="space-y-6 lg:col-span-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6 lg:col-span-2"
+          >
             {/* Header */}
             <div>
-              <div className="mb-4 flex items-center gap-3">
-                <span className="rounded-full border border-purple-500/30 bg-purple-500/20 px-3 py-1 text-sm font-medium text-purple-400">
+              <div className="mb-4 flex flex-wrap items-center gap-3">
+                <span className="rounded-lg border border-primary-start/30 bg-primary-start/20 px-3 py-1 text-sm font-medium text-primary-start">
                   {dataset.category}
                 </span>
                 {dataset.bio_validated && (
-                  <span className="flex items-center gap-1 rounded-full border border-green-500/30 bg-green-500/20 px-3 py-1 text-sm font-medium text-green-400">
-                    <CheckCircle className="h-4 w-4" />
+                  <Badge variant="verified" icon={<CheckCircle className="h-4 w-4" />}>
                     Bio.xyz Verified
-                  </span>
+                  </Badge>
                 )}
                 {dataset.zk_proof_hash !== '0x000' && (
-                  <span className="flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-500/20 px-3 py-1 text-sm font-medium text-purple-400">
-                    <Shield className="h-4 w-4" />
+                  <Badge variant="processing" icon={<Lock className="h-4 w-4" />}>
                     ZK Proof
-                  </span>
+                  </Badge>
                 )}
               </div>
               <h1 className="text-3xl font-bold text-white">{dataset.title}</h1>
             </div>
 
             {/* Description */}
-            <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
+            <div className="rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg">
               <h2 className="mb-4 text-lg font-semibold text-white">Description</h2>
               <div className="prose prose-invert prose-sm max-w-none">
                 {dataset.description.split('\n').map((line, i) => (
-                  <p key={i} className="mb-2 text-gray-300">
+                  <p key={i} className="mb-2 text-white/70">
                     {line}
                   </p>
                 ))}
@@ -229,24 +215,24 @@ export default function DatasetPage() {
             </div>
 
             {/* Provenance Information */}
-            <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
+            <div className="rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg">
               <h2 className="mb-4 text-lg font-semibold text-white">Provenance</h2>
 
               <div className="space-y-4">
                 {/* Filecoin CID */}
                 <div>
-                  <label className="mb-1 block text-sm text-gray-400">Filecoin CID</label>
+                  <label className="mb-1 block text-sm text-white/50">Filecoin CID</label>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 overflow-x-auto rounded-lg bg-gray-900 px-4 py-2 font-mono text-sm text-gray-300">
+                    <code className="flex-1 overflow-x-auto rounded-lg bg-surface-base px-4 py-2 font-mono text-sm text-white/80">
                       {dataset.filecoin_cid}
                     </code>
                     <button
                       onClick={() => copyToClipboard(dataset.filecoin_cid)}
-                      className="rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
+                      className="rounded-lg p-2 text-white/50 hover:bg-surface-base hover:text-white transition-colors"
                       title="Copy CID"
                     >
                       {copied ? (
-                        <CheckCircle className="h-5 w-5 text-green-400" />
+                        <CheckCircle className="h-5 w-5 text-validation" />
                       ) : (
                         <Copy className="h-5 w-5" />
                       )}
@@ -255,7 +241,7 @@ export default function DatasetPage() {
                       href={gatewayUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-lg p-2 text-gray-400 hover:bg-gray-700 hover:text-white"
+                      className="rounded-lg p-2 text-white/50 hover:bg-surface-base hover:text-white transition-colors"
                       title="View on IPFS"
                     >
                       <ExternalLink className="h-5 w-5" />
@@ -265,95 +251,86 @@ export default function DatasetPage() {
 
                 {/* ZK Proof */}
                 <div>
-                  <label className="mb-1 block text-sm text-gray-400">ZK Proof Hash</label>
+                  <label className="mb-1 block text-sm text-white/50">ZK Proof Hash</label>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 overflow-x-auto rounded-lg bg-gray-900 px-4 py-2 font-mono text-sm text-gray-300">
+                    <code className="flex-1 overflow-x-auto rounded-lg bg-surface-base px-4 py-2 font-mono text-sm text-white/80">
                       {dataset.zk_proof_hash}
                     </code>
-                    <button
-                      onClick={verifyProof}
-                      className="rounded-lg bg-purple-600 px-4 py-2 text-sm text-white hover:bg-purple-500"
-                    >
+                    <Button onClick={verifyProof} size="sm" variant="secondary">
                       {zkVerified === null ? 'Verify' : zkVerified ? '✓ Valid' : '✗ Invalid'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-6"
+          >
             {/* Purchase Card */}
-            <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
+            <div className="rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg">
               <div className="mb-6 text-center">
-                <div className="text-4xl font-bold text-white">
-                  {formatNear(dataset.price)} <span className="text-xl text-gray-400">NEAR</span>
+                <div className="text-4xl font-bold gradient-text">
+                  {formatNear(dataset.price)} <span className="text-xl text-white/50">NEAR</span>
                 </div>
               </div>
 
               {hasPurchased ? (
                 <div className="space-y-4">
-                  <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-center">
-                    <CheckCircle className="mx-auto mb-2 h-8 w-8 text-green-400" />
-                    <p className="font-medium text-green-400">Purchase Complete!</p>
+                  <div className="rounded-lg border border-validation/30 bg-validation/10 p-4 text-center">
+                    <CheckCircle className="mx-auto mb-2 h-8 w-8 text-validation" />
+                    <p className="font-medium text-validation">Purchase Complete!</p>
                   </div>
-                  <a
-                    href={gatewayUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-3 font-medium text-white"
-                  >
-                    <Download className="h-5 w-5" />
-                    Download Dataset
+                  <a href={gatewayUrl} target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full" leftIcon={<Download className="h-5 w-5" />}>
+                      Download Dataset
+                    </Button>
                   </a>
                 </div>
               ) : (
-                <button
+                <Button
                   onClick={handlePurchase}
+                  loading={purchasing}
                   disabled={purchasing}
-                  className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 py-4 font-semibold text-white transition-all hover:from-blue-500 hover:to-purple-500 disabled:cursor-not-allowed disabled:from-gray-700 disabled:to-gray-700"
+                  className="w-full"
+                  size="lg"
                 >
-                  {purchasing ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Processing...
-                    </span>
-                  ) : account ? (
-                    'Purchase with NEAR'
-                  ) : (
-                    'Connect Wallet to Purchase'
-                  )}
-                </button>
+                  {isSignedIn ? 'Purchase with NEAR' : 'Connect Wallet to Purchase'}
+                </Button>
               )}
 
-              <p className="mt-4 text-center text-xs text-gray-500">
+              <p className="mt-4 text-center text-xs text-white/40">
                 Secure payment via NEAR Protocol
               </p>
             </div>
 
             {/* Metadata */}
-            <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
+            <div className="rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg">
               <h3 className="mb-4 font-semibold text-white">Details</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-3">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-400">Provider:</span>
+                  <User className="h-4 w-4 text-white/40" />
+                  <span className="text-white/50">Provider:</span>
                   <span className="text-white">{dataset.owner}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <FileText className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-400">License:</span>
+                  <FileText className="h-4 w-4 text-white/40" />
+                  <span className="text-white/50">License:</span>
                   <span className="text-white">{dataset.license}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Download className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-400">Downloads:</span>
+                  <Download className="h-4 w-4 text-white/40" />
+                  <span className="text-white/50">Downloads:</span>
                   <span className="text-white">{dataset.downloads}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-400">Listed:</span>
+                  <Calendar className="h-4 w-4 text-white/40" />
+                  <span className="text-white/50">Listed:</span>
                   <span className="text-white">
                     {new Date(dataset.created_at).toLocaleDateString()}
                   </span>
@@ -362,32 +339,33 @@ export default function DatasetPage() {
             </div>
 
             {/* Validation Status */}
-            <div className="rounded-2xl border border-gray-700 bg-gray-800/50 p-6">
+            <div className="rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg">
               <h3 className="mb-4 font-semibold text-white">Verification Status</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Filecoin Storage</span>
-                  <span className="text-sm text-green-400">✓ Stored</span>
+                  <span className="text-sm text-white/50">Filecoin Storage</span>
+                  <span className="text-sm text-validation">✓ Stored</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Bio.xyz Validation</span>
-                  <span
-                    className={`text-sm ${dataset.bio_validated ? 'text-green-400' : 'text-gray-500'}`}
-                  >
+                  <span className="text-sm text-white/50">Bio.xyz Validation</span>
+                  <span className={cn('text-sm', dataset.bio_validated ? 'text-validation' : 'text-white/40')}>
                     {dataset.bio_validated ? '✓ Verified' : '○ Pending'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">ZK Proof</span>
+                  <span className="text-sm text-white/50">ZK Proof</span>
                   <span
-                    className={`text-sm ${dataset.zk_proof_hash !== '0x000' ? 'text-purple-400' : 'text-gray-500'}`}
+                    className={cn(
+                      'text-sm',
+                      dataset.zk_proof_hash !== '0x000' ? 'text-primary-start' : 'text-white/40'
+                    )}
                   >
                     {dataset.zk_proof_hash !== '0x000' ? '✓ Generated' : '○ None'}
                   </span>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

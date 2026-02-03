@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Search, ChevronDown, Loader2 } from 'lucide-react';
 import { DatasetCard, DatasetCardSkeleton } from '@/components/DatasetCard';
+import { Input } from '@/components/ui';
 import { Dataset } from '@/lib/near';
+import { cn } from '@/lib/utils';
 
 // Mock datasets for demo (in production, fetch from NEAR contract)
 const mockDatasets: Dataset[] = [
@@ -163,25 +166,34 @@ export default function MarketplacePage() {
     <div className="min-h-screen py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
           <h1 className="text-4xl font-bold text-white">Marketplace</h1>
-          <p className="mt-2 text-gray-400">
+          <p className="mt-2 text-white/60">
             Discover verified, high-quality AI training datasets with cryptographic provenance
           </p>
-        </div>
+        </motion.div>
 
         {/* Search and Filters */}
-        <div className="mb-8 space-y-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8 space-y-4"
+        >
           <div className="flex flex-col gap-4 sm:flex-row">
             {/* Search */}
             <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-500" />
+              <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-white/40" />
               <input
                 type="text"
                 placeholder="Search datasets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 py-3 pr-4 pl-12 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-lg border border-white/10 bg-surface-base py-3 pr-4 pl-12 text-white placeholder:text-white/30 transition-colors focus:border-primary-start focus:ring-4 focus:ring-primary-start/10 focus:outline-none"
               />
             </div>
 
@@ -190,7 +202,7 @@ export default function MarketplacePage() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-gray-700 bg-gray-800 px-4 py-3 pr-10 text-white focus:border-purple-500 focus:outline-none sm:w-48"
+                className="w-full appearance-none rounded-lg border border-white/10 bg-surface-base px-4 py-3 pr-10 text-white transition-colors focus:border-primary-start focus:ring-4 focus:ring-primary-start/10 focus:outline-none sm:w-48"
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -198,7 +210,7 @@ export default function MarketplacePage() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 text-gray-500" />
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 text-white/40" />
             </div>
 
             {/* Sort */}
@@ -206,7 +218,7 @@ export default function MarketplacePage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-gray-700 bg-gray-800 px-4 py-3 pr-10 text-white focus:border-purple-500 focus:outline-none sm:w-44"
+                className="w-full appearance-none rounded-lg border border-white/10 bg-surface-base px-4 py-3 pr-10 text-white transition-colors focus:border-primary-start focus:ring-4 focus:ring-primary-start/10 focus:outline-none sm:w-44"
               >
                 {sortOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -214,12 +226,12 @@ export default function MarketplacePage() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 text-gray-500" />
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-5 w-5 -translate-y-1/2 text-white/40" />
             </div>
           </div>
 
           {/* Results count */}
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-white/40">
             {loading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -229,7 +241,7 @@ export default function MarketplacePage() {
               `${filteredDatasets.length} dataset${filteredDatasets.length !== 1 ? 's' : ''} found`
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Dataset Grid */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -237,15 +249,24 @@ export default function MarketplacePage() {
             // Loading skeletons
             Array.from({ length: 6 }).map((_, i) => <DatasetCardSkeleton key={i} />)
           ) : filteredDatasets.length > 0 ? (
-            filteredDatasets.map((dataset) => <DatasetCard key={dataset.id} dataset={dataset} />)
+            filteredDatasets.map((dataset, i) => (
+              <motion.div
+                key={dataset.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <DatasetCard dataset={dataset} />
+              </motion.div>
+            ))
           ) : (
             // Empty state
             <div className="col-span-full py-20 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-800">
-                <Search className="h-8 w-8 text-gray-600" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-elevated">
+                <Search className="h-8 w-8 text-white/30" />
               </div>
-              <h3 className="text-xl font-medium text-gray-400">No datasets found</h3>
-              <p className="mt-2 text-gray-500">Try adjusting your search or filter criteria</p>
+              <h3 className="text-xl font-medium text-white/60">No datasets found</h3>
+              <p className="mt-2 text-white/40">Try adjusting your search or filter criteria</p>
             </div>
           )}
         </div>

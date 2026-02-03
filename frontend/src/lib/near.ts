@@ -1,12 +1,7 @@
 /**
  * NEAR Protocol Integration
- * Simplified implementation for hackathon demo
- * Uses mock wallet for development, real wallet in production
+ * Using @near-wallet-selector for wallet connection
  */
-
-// Mock configuration
-// const CONTRACT_NAME = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'veritasai.testnet';
-// const NETWORK_ID = 'testnet';
 
 export interface Dataset {
   id: number;
@@ -30,81 +25,7 @@ export interface Purchase {
   timestamp: number;
 }
 
-// Simple state management for wallet
-let walletState = {
-  isSignedIn: false,
-  accountId: null as string | null,
-};
-
-/**
- * Initialize NEAR connection
- * For demo, uses localStorage to persist mock state
- */
-export async function initNear() {
-  if (typeof window !== 'undefined') {
-    const storedAccount = localStorage.getItem('veritasai_account');
-    if (storedAccount) {
-      walletState = {
-        isSignedIn: true,
-        accountId: storedAccount,
-      };
-    }
-  }
-  return walletState;
-}
-
-/**
- * Sign in with NEAR wallet
- * For demo, simulates wallet connection
- */
-export async function signIn() {
-  if (typeof window === 'undefined') return;
-
-  // In production, redirect to NEAR wallet
-  // For demo, prompt for account name or use mock
-  const mockAccount = `user${Math.floor(Math.random() * 10000)}.testnet`;
-
-  walletState = {
-    isSignedIn: true,
-    accountId: mockAccount,
-  };
-
-  localStorage.setItem('veritasai_account', mockAccount);
-
-  // Reload to simulate wallet redirect return
-  window.location.reload();
-}
-
-/**
- * Sign out from NEAR wallet
- */
-export async function signOut() {
-  if (typeof window === 'undefined') return;
-
-  walletState = {
-    isSignedIn: false,
-    accountId: null,
-  };
-
-  localStorage.removeItem('veritasai_account');
-  window.location.reload();
-}
-
-/**
- * Get current account ID
- */
-export async function getAccountId(): Promise<string | null> {
-  await initNear();
-  return walletState.accountId;
-}
-
-/**
- * Check if user is signed in
- */
-export async function isSignedIn(): Promise<boolean> {
-  await initNear();
-  return walletState.isSignedIn;
-}
+const CONTRACT_ID = process.env.NEXT_PUBLIC_CONTRACT_NAME || 'veritasai.testnet';
 
 /**
  * List a new dataset on the marketplace
@@ -115,9 +36,20 @@ export async function listDataset(
 ): Promise<number> {
   console.log('Listing dataset:', dataset);
 
-  // In production:
-  // const contract = await getContract();
-  // return await contract.list_dataset(dataset);
+  // In production with wallet selector:
+  // const wallet = await selector.wallet();
+  // return await wallet.signAndSendTransaction({
+  //   receiverId: CONTRACT_ID,
+  //   actions: [{
+  //     type: 'FunctionCall',
+  //     params: {
+  //       methodName: 'list_dataset',
+  //       args: dataset,
+  //       gas: '30000000000000',
+  //       deposit: '0',
+  //     }
+  //   }]
+  // });
 
   // Mock: return random ID
   return Math.floor(Math.random() * 1000);
@@ -130,9 +62,20 @@ export async function listDataset(
 export async function purchaseDataset(datasetId: number, price: string): Promise<void> {
   console.log('Purchasing dataset:', datasetId, 'for', price);
 
-  // In production:
-  // const contract = await getContract();
-  // await contract.purchase_dataset({ dataset_id: datasetId }, { amount: price });
+  // In production with wallet selector:
+  // const wallet = await selector.wallet();
+  // await wallet.signAndSendTransaction({
+  //   receiverId: CONTRACT_ID,
+  //   actions: [{
+  //     type: 'FunctionCall',
+  //     params: {
+  //       methodName: 'purchase_dataset',
+  //       args: { dataset_id: datasetId },
+  //       gas: '30000000000000',
+  //       deposit: price,
+  //     }
+  //   }]
+  // });
 
   // Mock: simulate delay
   await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -146,10 +89,16 @@ export async function getDatasets(fromIndex: number = 0, limit: number = 20): Pr
   console.log('Getting datasets from:', fromIndex, 'limit:', limit);
 
   // In production:
-  // const contract = await getContract();
-  // return await contract.get_datasets({ from_index: fromIndex, limit });
+  // const provider = new JsonRpcProvider({ url: 'https://rpc.testnet.near.org' });
+  // const result = await provider.query({
+  //   request_type: 'call_function',
+  //   account_id: CONTRACT_ID,
+  //   method_name: 'get_datasets',
+  //   args_base64: btoa(JSON.stringify({ from_index: fromIndex, limit })),
+  //   finality: 'final'
+  // });
+  // return JSON.parse(Buffer.from(result.result).toString());
 
-  // Mock: return empty (component uses its own mock data)
   return [];
 }
 
@@ -158,11 +107,6 @@ export async function getDatasets(fromIndex: number = 0, limit: number = 20): Pr
  */
 export async function getDataset(datasetId: number): Promise<Dataset | null> {
   console.log('Getting dataset:', datasetId);
-
-  // In production:
-  // const contract = await getContract();
-  // return await contract.get_dataset({ dataset_id: datasetId });
-
   return null;
 }
 
@@ -171,11 +115,6 @@ export async function getDataset(datasetId: number): Promise<Dataset | null> {
  */
 export async function verifyPurchase(buyer: string, datasetId: number): Promise<boolean> {
   console.log('Verifying purchase:', buyer, datasetId);
-
-  // In production:
-  // const contract = await getContract();
-  // return await contract.verify_purchase({ buyer, dataset_id: datasetId });
-
   return false;
 }
 

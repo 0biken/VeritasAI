@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   ArrowRight,
   Shield,
@@ -9,6 +12,8 @@ import {
   Search,
   Zap,
 } from 'lucide-react';
+import { Button } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 // Mock featured datasets for demo
 const featuredDatasets = [
@@ -69,6 +74,19 @@ const features = [
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export default function HomePage() {
   return (
     <div className="min-h-screen">
@@ -76,91 +94,115 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div className="bg-glow absolute inset-0" />
         <div className="bg-grid absolute inset-0 opacity-50" />
+        <div className="bg-particles absolute inset-0" />
 
-        <div className="relative mx-auto max-w-7xl px-4 pt-20 pb-32 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
+        <div className="relative mx-auto max-w-7xl px-4 pt-24 pb-32 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="mx-auto max-w-4xl text-center"
+          >
             {/* Badge */}
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm text-purple-400">
-              <Zap className="h-4 w-4" />
-              <span>Powered by NEAR Protocol + Filecoin</span>
-            </div>
+            <motion.div variants={itemVariants} className="mb-8 inline-flex">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary-start/30 bg-primary-start/10 px-4 py-2 text-sm text-primary-start backdrop-blur-lg">
+                <Zap className="h-4 w-4" />
+                <span>Powered by NEAR Protocol + Filecoin</span>
+              </div>
+            </motion.div>
 
             {/* Headline */}
-            <h1 className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+            <motion.h1
+              variants={itemVariants}
+              className="text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl"
+            >
               <span className="text-white">Ethical AI Data with</span>
               <br />
-              <span className="text-gradient">Cryptographic Provenance</span>
-            </h1>
+              <span className="gradient-text">Cryptographic Provenance</span>
+            </motion.h1>
 
             {/* Subheadline */}
-            <p className="mx-auto mt-8 max-w-2xl text-xl leading-relaxed text-gray-400">
+            <motion.p
+              variants={itemVariants}
+              className="mx-auto mt-8 max-w-2xl text-xl leading-relaxed text-white/70"
+            >
               The decentralized marketplace for verified, high-quality AI training datasets. Upload
               with proof, discover with confidence, compensate creators fairly.
-            </p>
+            </motion.p>
 
             {/* CTAs */}
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                href="/marketplace"
-                className="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-purple-500/25 transition-all hover:from-blue-500 hover:to-purple-500 hover:shadow-purple-500/40"
-              >
-                <Search className="h-5 w-5" />
-                Browse Marketplace
-                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            <motion.div
+              variants={itemVariants}
+              className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            >
+              <Link href="/marketplace">
+                <Button size="lg" leftIcon={<Search className="h-5 w-5" />} rightIcon={<ArrowRight className="h-5 w-5" />}>
+                  Browse Marketplace
+                </Button>
               </Link>
-              <Link
-                href="/upload"
-                className="flex items-center gap-2 rounded-xl border border-gray-700 bg-gray-800 px-8 py-4 text-lg font-semibold text-white transition-all hover:border-gray-600 hover:bg-gray-700"
-              >
-                <Upload className="h-5 w-5" />
-                Upload Dataset
+              <Link href="/upload">
+                <Button variant="secondary" size="lg" leftIcon={<Upload className="h-5 w-5" />}>
+                  Upload Dataset
+                </Button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Stats */}
-          <div className="mx-auto mt-20 grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
-            {stats.map((stat) => (
-              <div
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mx-auto mt-20 grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3"
+          >
+            {stats.map((stat, i) => (
+              <motion.div
                 key={stat.label}
-                className="flex items-center gap-4 rounded-2xl border border-gray-700 bg-gray-800/50 p-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + i * 0.1 }}
+                className="flex items-center gap-4 rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20">
-                  <stat.icon className="h-6 w-6 text-purple-400" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary-start/20 to-primary-end/20">
+                  <stat.icon className="h-6 w-6 text-primary-start" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-white">{stat.value}</div>
-                  <div className="text-sm text-gray-400">{stat.label}</div>
+                  <div className="text-2xl font-bold gradient-text">{stat.value}</div>
+                  <div className="text-sm text-white/50">{stat.label}</div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="bg-gray-900/50 py-24">
+      <section className="bg-background-secondary/50 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">Why VeritasAI?</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-400">
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-white/60">
               Every dataset comes with cryptographic guarantees for authenticity, quality, and fair
               compensation.
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {features.map((feature) => (
-              <div
+            {features.map((feature, i) => (
+              <motion.div
                 key={feature.title}
-                className="group rounded-2xl border border-gray-700 bg-gray-800/50 p-6 transition-all hover:border-purple-500/50"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="group rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg transition-all duration-300 hover:border-primary-start/40 hover:-translate-y-1"
               >
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 transition-transform group-hover:scale-110">
-                  <feature.icon className="h-7 w-7 text-purple-400" />
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-primary-start/20 to-primary-end/20 transition-transform group-hover:scale-110">
+                  <feature.icon className="h-7 w-7 text-primary-start" />
                 </div>
                 <h3 className="mb-3 text-xl font-semibold text-white">{feature.title}</h3>
-                <p className="leading-relaxed text-gray-400">{feature.description}</p>
-              </div>
+                <p className="leading-relaxed text-white/60">{feature.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -172,11 +214,11 @@ export default function HomePage() {
           <div className="mb-12 flex items-center justify-between">
             <div>
               <h2 className="text-3xl font-bold text-white">Featured Datasets</h2>
-              <p className="mt-2 text-gray-400">Popular datasets with verified provenance</p>
+              <p className="mt-2 text-white/50">Popular datasets with verified provenance</p>
             </div>
             <Link
               href="/marketplace"
-              className="flex items-center gap-2 font-medium text-purple-400 hover:text-purple-300"
+              className="flex items-center gap-2 font-medium text-primary-start hover:text-primary-start/80 transition-colors"
             >
               View all
               <ArrowRight className="h-4 w-4" />
@@ -184,65 +226,70 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {featuredDatasets.map((dataset) => (
-              <Link
+            {featuredDatasets.map((dataset, i) => (
+              <motion.div
                 key={dataset.id}
-                href={`/dataset/${dataset.id}`}
-                className="group card-hover rounded-2xl border border-gray-700 bg-gray-800/50 p-6 transition-all hover:border-purple-500/50"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
               >
-                <div className="mb-4 flex items-start justify-between">
-                  <span className="rounded-full border border-purple-500/30 bg-purple-500/20 px-3 py-1 text-xs font-medium text-purple-400">
-                    {dataset.category}
-                  </span>
-                  {dataset.validated && (
-                    <div className="flex items-center gap-1 text-xs text-green-400">
-                      <CheckCircle className="h-4 w-4" />
-                      Verified
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-xl font-semibold text-white transition-colors group-hover:text-purple-400">
-                  {dataset.title}
-                </h3>
-                <div className="mt-4 flex items-center justify-between text-sm">
-                  <span className="text-gray-400">{dataset.downloads} downloads</span>
-                  <span className="text-xl font-bold text-white">{dataset.price} Ⓝ</span>
-                </div>
-              </Link>
+                <Link
+                  href={`/dataset/${dataset.id}`}
+                  className="group block rounded-lg border border-white/8 bg-surface-elevated p-6 backdrop-blur-lg transition-all duration-300 hover:border-primary-start/40 hover:-translate-y-1"
+                >
+                  <div className="mb-4 flex items-start justify-between">
+                    <span className="rounded-lg border border-primary-start/30 bg-primary-start/20 px-3 py-1 text-xs font-medium text-primary-start">
+                      {dataset.category}
+                    </span>
+                    {dataset.validated && (
+                      <div className="flex items-center gap-1 text-xs text-validation">
+                        <CheckCircle className="h-4 w-4" />
+                        Verified
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-semibold text-white transition-all group-hover:gradient-text">
+                    {dataset.title}
+                  </h3>
+                  <div className="mt-4 flex items-center justify-between text-sm">
+                    <span className="text-white/50">{dataset.downloads} downloads</span>
+                    <span className="text-xl font-bold gradient-text">{dataset.price} Ⓝ</span>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-b from-gray-900/50 to-gray-950 py-24">
+      <section className="bg-gradient-to-b from-background-secondary/50 to-background-primary py-24">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="mb-6 text-4xl font-bold text-white">Ready to contribute to ethical AI?</h2>
-          <p className="mb-10 text-xl text-gray-400">
+          <p className="mb-10 text-xl text-white/60">
             Upload your datasets and start earning while helping build transparent, responsible AI
             systems.
           </p>
-          <Link
-            href="/upload"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-10 py-5 text-xl font-semibold text-white shadow-lg shadow-purple-500/25 transition-all hover:from-blue-500 hover:to-purple-500 hover:shadow-purple-500/40"
-          >
-            <Upload className="h-6 w-6" />
-            Start Uploading
+          <Link href="/upload">
+            <Button size="lg" leftIcon={<Upload className="h-6 w-6" />}>
+              Start Uploading
+            </Button>
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-12">
+      <footer className="border-t border-white/8 py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-start to-primary-end">
                 <span className="font-bold text-white">V</span>
               </div>
               <span className="font-semibold text-white">VeritasAI</span>
             </div>
-            <div className="flex items-center gap-8 text-sm text-gray-400">
+            <div className="flex items-center gap-8 text-sm text-white/50">
               <span>Powered by NEAR Protocol</span>
               <span>•</span>
               <span>Filecoin Storage</span>
@@ -251,7 +298,7 @@ export default function HomePage() {
               <span>•</span>
               <span>Checker Network</span>
             </div>
-            <div className="text-sm text-gray-500">© 2026 VeritasAI. MIT License.</div>
+            <div className="text-sm text-white/40">© 2026 VeritasAI. MIT License.</div>
           </div>
         </div>
       </footer>
